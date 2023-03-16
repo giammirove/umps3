@@ -16,25 +16,26 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+ * USA.
  */
 
 #ifndef UMPS_DEVICE_H
 #define UMPS_DEVICE_H
 
-#include "umps/types.h"
 #include "umps/const.h"
+#include "umps/types.h"
 
 #include <sigc++/sigc++.h>
 
 enum DeviceType {
-	DT_NULL = 0,
-	DT_DISK,
-	DT_FLASH,
-	DT_ETH,
-	DT_PRINTER,
-	DT_TERMINAL,
-	N_DEVICES
+  DT_NULL = 0,
+  DT_DISK,
+  DT_FLASH,
+  DT_ETH,
+  DT_PRINTER,
+  DT_TERMINAL,
+  N_DEVICES
 };
 
 #define PRNTBUFSIZE 128
@@ -57,102 +58,92 @@ class MachineConfig;
 
 class Device {
 public:
-// This method creates a Device object with "coordinates" (interrupt
-// line, device number) clears device register, and links it to bus
-	Device(SystemBus * busl, unsigned int intl, unsigned int dnum);
+  // This method creates a Device object with "coordinates" (interrupt
+  // line, device number) clears device register, and links it to bus
+  Device(SystemBus *busl, unsigned int intl, unsigned int dnum);
 
-	virtual ~Device();
+  virtual ~Device();
 
-	unsigned int getInterruptLine() const {
-		return intL;
-	}
-	unsigned int getNumber() const {
-		return devNum;
-	}
+  unsigned int getInterruptLine() const { return intL; }
+  unsigned int getNumber() const { return devNum; }
 
-// This method returns device type ID
-	unsigned int Type() const {
-		return dType;
-	}
+  // This method returns device type ID
+  unsigned int Type() const { return dType; }
 
-// This method is invoked by SystemBus when the required operation
-// scheduled on the device (using Event objects and queue) should be
-// completed: the default NULLDEV device has nothing to do, but
-// others do
-	virtual unsigned int CompleteDevOp();
+  // This method is invoked by SystemBus when the required operation
+  // scheduled on the device (using Event objects and queue) should be
+  // completed: the default NULLDEV device has nothing to do, but
+  // others do
+  virtual unsigned int CompleteDevOp();
 
-// This method allows SystemBus to write into device register for
-// device: NULLDEV device register write has no effects, but other
-// devices will start performing required operations if COMMAND
-// register is written with proper codes
-	virtual void WriteDevReg(unsigned int regnum, Word data);
+  // This method allows SystemBus to write into device register for
+  // device: NULLDEV device register write has no effects, but other
+  // devices will start performing required operations if COMMAND
+  // register is written with proper codes
+  virtual void WriteDevReg(unsigned int regnum, Word data);
 
-// This method returns the static buffer contained in each device
-// describing the current device status (operation performed, etc.).
-// NULLDEV devices are not operational
-	virtual const char* getDevSStr();
+  // This method returns the static buffer contained in each device
+  // describing the current device status (operation performed, etc.).
+  // NULLDEV devices are not operational
+  virtual const char *getDevSStr();
 
-/*
- * Return a human-readable expression for completion time of the
- * current device operation.
- */
-	virtual std::string getCTimeInfo() const;
+  /*
+   * Return a human-readable expression for completion time of the
+   * current device operation.
+   */
+  virtual std::string getCTimeInfo() const;
 
-// This method allows to copy inputstr contents inside
-// TerminalDevice receiver buffer: not operational for all other
-// devices (NULLDEV included) and produces a panic message
-	virtual void Input(const char* inputstr);
+  // This method allows to copy inputstr contents inside
+  // TerminalDevice receiver buffer: not operational for all other
+  // devices (NULLDEV included) and produces a panic message
+  virtual void Input(const char *inputstr);
 
-// This method returns the current value for device register field
-// indexed by regnum
-	Word ReadDevReg(unsigned int regnum);
+  // This method returns the current value for device register field
+  // indexed by regnum
+  Word ReadDevReg(unsigned int regnum);
 
-// This method gets the current operational status for the device,
-// as set by user inside the simulation; a "not-working" device
-// fails all operations requested and reports proper error codes; a
-// NULLDEV always fails.
-	bool getDevNotWorking();
+  // This method gets the current operational status for the device,
+  // as set by user inside the simulation; a "not-working" device
+  // fails all operations requested and reports proper error codes; a
+  // NULLDEV always fails.
+  bool getDevNotWorking();
 
-// This method sets the operational status for the device inside the
-// simulation as user wishes; a "not-working" device fails all operations
-// requested and reports proper error codes; a NULLDEV always fail
-	bool setDevNotWorking(bool cond);
+  // This method sets the operational status for the device inside the
+  // simulation as user wishes; a "not-working" device fails all operations
+  // requested and reports proper error codes; a NULLDEV always fail
+  bool setDevNotWorking(bool cond);
 
-	void setCondition(bool working);
-	bool getCondition() const {
-		return isWorking;
-	}
+  void setCondition(bool working);
+  bool getCondition() const { return isWorking; }
 
-	sigc::signal<void, const char*> SignalStatusChanged;
-	sigc::signal<void, bool> SignalConditionChanged;
+  sigc::signal<void, const char *> SignalStatusChanged;
+  sigc::signal<void, bool> SignalConditionChanged;
 
 protected:
-	virtual bool isBusy() const;
-	uint64_t scheduleIOEvent(uint64_t delay);
+  virtual bool isBusy() const;
+  uint64_t scheduleIOEvent(uint64_t delay);
 
-// Interrupt line and device number
-	unsigned int intL;
-	unsigned int devNum;
+  // Interrupt line and device number
+  unsigned int intL;
+  unsigned int devNum;
 
-// device register structure
-	Word reg[DEVREGLEN];
+  // device register structure
+  Word reg[DEVREGLEN];
 
-// device type ID (see h/const.h)
-	unsigned int dType;
+  // device type ID (see h/const.h)
+  unsigned int dType;
 
-// controlling SystemBus object
-	SystemBus* bus;
+  // controlling SystemBus object
+  SystemBus *bus;
 
-// Completion time for current operation (if any)
-	uint64_t complTime;
+  // Completion time for current operation (if any)
+  uint64_t complTime;
 
-// device operational status
-	bool isWorking;
+  // device operational status
+  bool isWorking;
 };
 
-
 /**************************************************************************/
-
 
 // PrinterDevice class allows to emulate parallel character printer
 // currently in use (see performance figures shown before). It uses the same
@@ -163,26 +154,25 @@ protected:
 // a static buffer for device operation & status description;
 // a FILE structure for log file access.
 
-class PrinterDevice: public Device {
+class PrinterDevice : public Device {
 public:
-	PrinterDevice(SystemBus* busl, const MachineConfig* config, unsigned int intl, unsigned int dnum);
-	virtual ~PrinterDevice();
-	virtual void WriteDevReg(unsigned int regnum, Word data);
-	virtual unsigned int CompleteDevOp();
-	virtual const char* getDevSStr();
+  PrinterDevice(SystemBus *busl, const MachineConfig *config, unsigned int intl,
+                unsigned int dnum);
+  virtual ~PrinterDevice();
+  virtual void WriteDevReg(unsigned int regnum, Word data);
+  virtual unsigned int CompleteDevOp();
+  virtual const char *getDevSStr();
 
 private:
-	const MachineConfig* const config;
+  const MachineConfig *const config;
 
-// log file handling
-	FILE * prntFile;
+  // log file handling
+  FILE *prntFile;
 
-	char statStr[PRNTBUFSIZE];
+  char statStr[PRNTBUFSIZE];
 };
 
-
 /**************************************************************************/
-
 
 // TerminalDevice class allows to emulate serial "dumb" terminal (see
 // performance figures shown before). TerminalDevice may be split up into
@@ -195,58 +185,58 @@ private:
 // a FILE structure for log file access;
 // some structures for handling terminal transmitter and receiver.
 
-class TerminalDevice: public Device {
+class TerminalDevice : public Device {
 public:
-	TerminalDevice(SystemBus* bus, const MachineConfig* cfg, unsigned int il, unsigned int devNo);
-	virtual ~TerminalDevice();
+  TerminalDevice(SystemBus *bus, const MachineConfig *cfg, unsigned int il,
+                 unsigned int devNo);
+  virtual ~TerminalDevice();
 
-	virtual void WriteDevReg(unsigned int regnum, Word data);
-	virtual unsigned int CompleteDevOp();
+  virtual void WriteDevReg(unsigned int regnum, Word data);
+  virtual unsigned int CompleteDevOp();
 
-	virtual const char* getDevSStr();
-	const char* getTXStatus() const;
-	const char* getRXStatus() const;
+  virtual const char *getDevSStr();
+  const char *getTXStatus() const;
+  const char *getRXStatus() const;
 
-	std::string getTXCTimeInfo() const;
-	std::string getRXCTimeInfo() const;
-	virtual std::string getCTimeInfo() const;
+  std::string getTXCTimeInfo() const;
+  std::string getRXCTimeInfo() const;
+  virtual std::string getCTimeInfo() const;
 
-	virtual void Input(const char * inputstr);
+  virtual void Input(const char *inputstr);
 
-	sigc::signal<void, char> SignalTransmitted;
+  sigc::signal<void, char> SignalTransmitted;
 
 private:
-	const MachineConfig* const config;
+  const MachineConfig *const config;
 
-// for log file handling
-	FILE * termFile;
+  // for log file handling
+  FILE *termFile;
 
-// receiver buffer and pointer to first character to receive from it
-	char * recvBuf;
-	unsigned int recvBp;
+  // receiver buffer and pointer to first character to receive from it
+  char *recvBuf;
+  unsigned int recvBp;
+  std::string tranBuf;
 
-// static buffer for receiver
-	char recvStatStr[TERMBUFSIZE];
+  // static buffer for receiver
+  char recvStatStr[TERMBUFSIZE];
 
-// static buffer for transmitter
-	char tranStatStr[TERMBUFSIZE];
+  // static buffer for transmitter
+  char tranStatStr[TERMBUFSIZE];
 
-// Completion time for current receiver operation (if any)
-	uint64_t recvCTime;
+  // Completion time for current receiver operation (if any)
+  uint64_t recvCTime;
 
-// Completion time for current transmitter operation (if any)
-	uint64_t tranCTime;
+  // Completion time for current transmitter operation (if any)
+  uint64_t tranCTime;
 
-// receiver operation pending flag
-	bool recvIntPend;
+  // receiver operation pending flag
+  bool recvIntPend;
 
-// transmitter operation pending flag
-	bool tranIntPend;
+  // transmitter operation pending flag
+  bool tranIntPend;
 };
 
-
 /**************************************************************************/
-
 
 // DiskDevice class allows to emulate a disk drive: each 4096 byte sector
 // is identified by (cyl, head, sect) set of disk coordinates;
@@ -265,40 +255,40 @@ private:
 // a Block object for file handling;
 // some items for performance computation.
 
-class DiskDevice: public Device {
+class DiskDevice : public Device {
 public:
-	DiskDevice(SystemBus* bus, const MachineConfig* cfg, unsigned int line, unsigned int devNo);
-	virtual ~DiskDevice();
-	virtual void WriteDevReg(unsigned int regnum, Word data);
-	virtual unsigned int CompleteDevOp();
-	virtual const char * getDevSStr();
+  DiskDevice(SystemBus *bus, const MachineConfig *cfg, unsigned int line,
+             unsigned int devNo);
+  virtual ~DiskDevice();
+  virtual void WriteDevReg(unsigned int regnum, Word data);
+  virtual unsigned int CompleteDevOp();
+  virtual const char *getDevSStr();
 
 private:
-	const MachineConfig* const config;
+  const MachineConfig *const config;
 
-// to handle it
-	FILE * diskFile;
+  // to handle it
+  FILE *diskFile;
 
-// static buffer
-	char statStr[DISKBUFSIZE];
+  // static buffer
+  char statStr[DISKBUFSIZE];
 
-// sector buffer and coordinates on disk (cyl, head, sect)
-	Block * diskBuf;
-	unsigned int cylBuf, headBuf, sectBuf;
+  // sector buffer and coordinates on disk (cyl, head, sect)
+  Block *diskBuf;
+  unsigned int cylBuf, headBuf, sectBuf;
 
-// start of disk image inside file (after header)
-	SWord diskOfs;
+  // start of disk image inside file (after header)
+  SWord diskOfs;
 
-// disk performance parameters
-	DiskParams * diskP;
+  // disk performance parameters
+  DiskParams *diskP;
 
-// sector underhead time in ticks
-	Word sectTicks;
+  // sector underhead time in ticks
+  Word sectTicks;
 
-// current cylinder
-	unsigned int currCyl;
+  // current cylinder
+  unsigned int currCyl;
 };
-
 
 /**************************************************************************/
 
@@ -317,64 +307,64 @@ private:
 // a Block object for file handling;
 // some items for performance computation.
 
-class FlashDevice: public Device {
+class FlashDevice : public Device {
 public:
-	FlashDevice(SystemBus* bus, const MachineConfig* cfg, unsigned int line, unsigned int devNo);
-	virtual ~FlashDevice();
-	virtual void WriteDevReg(unsigned int regnum, Word data);
-	virtual unsigned int CompleteDevOp();
-	virtual const char * getDevSStr();
+  FlashDevice(SystemBus *bus, const MachineConfig *cfg, unsigned int line,
+              unsigned int devNo);
+  virtual ~FlashDevice();
+  virtual void WriteDevReg(unsigned int regnum, Word data);
+  virtual unsigned int CompleteDevOp();
+  virtual const char *getDevSStr();
 
 private:
-	const MachineConfig* const config;
+  const MachineConfig *const config;
 
-// to handle it
-	FILE * flashFile;
+  // to handle it
+  FILE *flashFile;
 
-// static buffer
-	char statStr[FLASHBUFSIZE];
+  // static buffer
+  char statStr[FLASHBUFSIZE];
 
-// block buffer and coordinates on flash device (block)
-	Block * flashBuf;
-	unsigned int blockBuf;
+  // block buffer and coordinates on flash device (block)
+  Block *flashBuf;
+  unsigned int blockBuf;
 
-// start of flash device image inside file (after header)
-	SWord flashOfs;
+  // start of flash device image inside file (after header)
+  SWord flashOfs;
 
-// flash device performance parameters
-	FlashParams * flashP;
+  // flash device performance parameters
+  FlashParams *flashP;
 };
-
 
 /**************************************************************************/
 
-
 // EthDevice class allows to emulate an ethernet interface
 
-class EthDevice: public Device
-{
+class EthDevice : public Device {
 public:
-	EthDevice(SystemBus* bus, const MachineConfig* config, unsigned int line, unsigned int devNo);
-	virtual ~EthDevice();
-	virtual void WriteDevReg(unsigned int regnum, Word data);
-	virtual unsigned int CompleteDevOp();
-	virtual const char* getDevSStr();
+  EthDevice(SystemBus *bus, const MachineConfig *config, unsigned int line,
+            unsigned int devNo);
+  virtual ~EthDevice();
+  virtual void WriteDevReg(unsigned int regnum, Word data);
+  virtual unsigned int CompleteDevOp();
+  virtual const char *getDevSStr();
 
 protected:
-	virtual bool isBusy() const;
+  virtual bool isBusy() const;
 
 private:
-	const MachineConfig* const config;
+  const MachineConfig *const config;
 
-	Block *readbuf;
-	Block *writebuf;
+  Block *readbuf;
+  Block *writebuf;
 
-// static buffer
-	char statStr[ETHBUFSIZE];
+  // static buffer
+  char statStr[ETHBUFSIZE];
 
-	bool polling;
+  bool polling;
 
-	netinterface *netint;
+  netinterface *netint;
 };
 
 #endif // UMPS_DEVICE_H
+

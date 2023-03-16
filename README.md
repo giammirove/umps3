@@ -174,6 +174,16 @@ $ sudo make install
 
 You should now be able to launch µMPS3 via the application menu of your desktop environment, or by typing `umps3` at the command line.
 
+##### Launch in headless mode
+
+You should be able to launch µMPS3 in headless mode by typing `umps3` at the command line in this way:
+```sh
+$ umps3 "/absolute/path/to/machine_config.json" --headless
+```
+
+N.B.: if you use relative paths in the config be sure to launch µMPS3 in the same directory.
+
+
 #### Uninstallation
 
 From the root of the binary tree run:
